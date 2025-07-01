@@ -1,85 +1,59 @@
+# 🧹 Robot Vacuum Cleaner – Pathfinding & Grid Sweeping (C++)
 
-# Overview
-Design and implement a basic algorithm for an automated robot that must clean a rectangular area that is populated with random obstacles.  Your robot is so powerful that it can sweep up both garbage and obstacles, but you do not want to sweep up obstacles if you want to receive full credit.  Your robot can only move 1  square at a time in any direction (including diagonally), but only using the moveTo() function provide.
+This project simulates a robot vacuum that navigates a 20×20 grid to clean garbage (`.`) while avoiding obstacles (`*`). It uses **Breadth-First Search (BFS)** to find the shortest path to each piece of garbage and reports a score based on cleaning efficiency.
 
+---
 
+## 🔍 Overview
 
-# Background
-A grid is filled with garbage and obstacles.  Your robot is so powerful that it can sweep up both!  But you only want to sweep up the garbage.  Our "room" is just a square grid represented by a 2D grid array of single characters.  A piece of garbage is denoted by the period character '.'  (note we use single quotes in cpp for characters!).  An obstacle is denoted by a the star character '*'.   Your grid goes from row zero to row numrows-1 and from column zero to numcols-1.  Your robot can only move 1 square at any time in any direction (it can move diagonally).  But be careful not to move out of the valid range of the grid - you could crash your program.
+- Randomly generated room:
+  - `.` = Garbage
+  - `*` = Obstacle
+  - `'V'` = Robot's current position
+- Robot starts at the top-left `(0, 0)`
+- Moves to nearest garbage one cell at a time
+- Avoids obstacles and cleans all reachable garbage
 
- 
-# Example Output
-HW - Robot Vacuum (starter)
-```
-Dirty Room before sweeping:
---------------------------------------------------------------
-| .  .  .  *  .  .  .  .  .  *  .  .  .  .  .  .  .  .  .  . |
-| *  .  .  .  .  .  .  *  .  .  .  *  *  .  .  .  .  .  *  . |
-| .  .  *  *  .  .  .  *  *  .  *  .  .  .  .  .  .  .  .  . |
-| *  .  .  .  .  *  .  .  *  .  *  .  .  .  *  .  .  .  .  . |
-| .  *  .  .  .  .  *  .  .  .  .  .  .  .  .  *  .  .  .  . |
-| .  .  .  .  .  *  .  *  *  .  .  .  *  .  .  .  .  .  .  * |
-| .  .  .  *  .  .  .  .  *  .  .  .  .  .  .  .  *  .  *  * |
-| .  .  .  .  *  *  .  .  *  *  .  .  .  *  *  .  .  .  *  . |
-| .  .  .  .  .  .  .  *  .  .  *  *  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  *  .  *  .  .  .  .  .  .  *  .  .  *  .  . |
-| .  *  .  .  *  .  *  .  *  *  .  .  .  *  *  .  *  .  .  . |
-| .  .  .  .  .  .  *  .  .  .  .  .  .  .  .  *  .  *  .  * |
-| *  .  .  .  .  .  .  *  *  *  *  *  .  .  .  *  *  .  .  . |
-| *  .  *  *  .  .  *  .  .  *  *  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  *  .  .  .  .  .  .  . |
-| .  .  .  .  .  *  .  .  .  *  .  *  .  .  .  *  .  *  .  . |
-| *  *  *  .  *  .  *  .  *  *  .  *  .  .  *  .  .  .  .  . |
-| *  *  *  .  .  .  .  .  .  .  .  .  .  .  *  .  .  .  .  * |
-| .  .  *  .  *  .  *  .  .  .  .  *  .  .  .  .  .  .  .  . |
-| .  .  .  *  *  .  *  *  .  .  .  .  .  *  *  *  .  *  .  . |
---------------------------------------------------------------
+---
 
-Clean Room after sweeping:
---------------------------------------------------------------
-| .  .  .  *  .  .  .  .  .  *  .  .  .  .  .  .  .  .  .  . |
-| *     .  .  .  .  .  *  .  .  .  *  *  .  .  .  .  .  *  . |
-| .  .  *  *  .  .  .  *  *  .  *  .  .  .  .  .  .  .  .  . |
-| *  .  .  .  .  *  .  .  *  .  *  .  .  .  *  .  .  .  .  . |
-| .  *  .  .  .  .  *  .  .  .  .  .  .  .  .  *  .  .  .  . |
-| .  .  .  .  .  *  .  *  *  .  .  .  *  .  .  .  .  .  .  * |
-| .  .  .  *  .  .  .  .  *  .  .  .  .  .  .  .  *  .  *  * |
-| .  .  .  .  *  *  .  .  *  *  .  .  .  *  *  .  .  .  *  . |
-| .  .  .  .  .  .  .  *  .  .  *  *  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  *  .  *  .  .  .  .  .  .  *  .  .  *  .  . |
-| .  *  .  .  *  .  *  .  *  *  .  .  .  *  *  .  *  .  .  . |
-| .  .  .  .  .  .  *  .  .  .  .  .  .  .  .  *  .  *  .  * |
-| *  .  .  .  .  .  .  *  *  *  *  *  .  .  .  *  *  .  .  . |
-| *  .  *  *  .  .  *  .  .  *  *  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  *  .  .  .  .  .  .  . |
-| .  .  .  .  .  *  .  .  .  *  .  *  .  .  .  *  .  *  .  . |
-| *  *  *  .  *  .  *  .  *  *  .  *  .  .  *  .  .  .  .  . |
-| *  *  *  .  .  .  .  .  .  .  .  .  .  .  *  .  .  .  .  * |
-| .  .  *  .  *  .  *  .  .  .  .  *  .  .  .  .  .  .  .  . |
-| .  .  .  *  *  .  *  *  .  .  .  .  .  *  *  *  .  *  .  . |
---------------------------------------------------------------
-SCORE:
-----------------------
-Total squares in grid = 400
-Garbage total (original): 298
-Obstacles total (original): 102
-Garbage swept up: 1
-Garbage Missed = 297 (minus 297 points)
-Obstacles Missing = 0 out of 102 (minus 0 points)
-Total Moves taken = 1
-Cleaning efficiency = garbage swept up/totalMoves = %100)
-Final normalized score out of 100 possible = 25  (this is your final score)
-Hmmm - might want to call in some iRobot back-up for help.  Let me know if you have questions!
+## 🎯 Features
 
-```
+- ✅ Random grid with obstacles and garbage
+- ✅ Movement validation (no diagonal or large jumps)
+- ✅ Adjacency graph of the grid
+- ✅ Shortest path using BFS
+- ✅ Repeats cleaning until garbage is gone
+- ✅ Scoring system (accuracy and efficiency)
 
+---
 
- 
+## 🧠 How It Works
 
- 
+### `initGrid()`
+Initializes the grid with:
+- 25% chance of obstacle
+- 75% garbage
 
+### `create_adj_matrix()`
+Builds a graph of legal moves (non-obstacle, within 1 cell).
 
-Points
-100
-Submitting
-a text entry box, a website url, or a file upload
+### `shortest_path()`
+Finds the shortest path to a garbage cell using **BFS**.
+
+### `sweepGrid()`
+Main logic:
+- While garbage exists:
+  - Find shortest path to closest garbage
+  - Move vacuum along that path
+  - Clean and repeat
+
+### `printScore()`
+Evaluates cleaning quality:
+- Penalty for missed garbage
+- Penalty for removing obstacles
+- Reports move efficiency and final score out of 100
+
+---
+
+## 📸 Example Output
+
